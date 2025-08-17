@@ -1,11 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Music, Users, Trophy, Play } from 'lucide-react';
+import axios from 'axios';
 
 const SplashScreen: React.FC = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const [youtubeThumbnails, setYoutubeThumbnails] = useState<{ [key: string]: string }>({});
 
   // Redirect authenticated users to the main app
   useEffect(() => {
@@ -37,23 +39,53 @@ const SplashScreen: React.FC = () => {
     return null;
   }
 
+  // Fetch YouTube thumbnails for sample battles
+  useEffect(() => {
+    const fetchYouTubeThumbnails = async () => {
+      try {
+        const thumbnails: { [key: string]: string } = {};
+        
+        for (const battle of sampleBattles) {
+          try {
+            // Fetch YouTube thumbnail for song 1
+            const song1Response = await axios.get(`/youtube/search?q=${encodeURIComponent(battle.song1.title)}&artist=${encodeURIComponent(battle.song1.artist)}`);
+            
+            // Fetch YouTube thumbnail for song 2
+            const song2Response = await axios.get(`/youtube/search?q=${encodeURIComponent(battle.song2.title)}&artist=${encodeURIComponent(battle.song2.artist)}`);
+            
+            thumbnails[`${battle.song1.title}-${battle.song1.artist}`] = song1Response.data.thumbnail;
+            thumbnails[`${battle.song2.title}-${battle.song2.artist}`] = song2Response.data.thumbnail;
+          } catch (error) {
+            console.error(`Failed to fetch YouTube thumbnails for battle ${battle.id}:`, error);
+          }
+        }
+        
+        setYoutubeThumbnails(thumbnails);
+      } catch (error) {
+        console.error('Failed to fetch YouTube thumbnails:', error);
+      }
+    };
+
+    fetchYouTubeThumbnails();
+  }, []);
+
   const sampleBattles = [
     {
       id: 1,
-      song1: { title: "Bohemian Rhapsody", artist: "Queen", art: "https://i.scdn.co/image/ab67616d0000b273ce4f1737e465c9c8d7fdf6bc" },
-      song2: { title: "Stairway to Heaven", artist: "Led Zeppelin", art: "https://i.scdn.co/image/ab67616d0000b273c8a11e48c91a1ed7b55b9b1b" },
+      song1: { title: "Bohemian Rhapsody", artist: "Queen" },
+      song2: { title: "Stairway to Heaven", artist: "Led Zeppelin" },
       votes: 156
     },
     {
       id: 2,
-      song1: { title: "Hotel California", artist: "Eagles", art: "https://i.scdn.co/image/ab67616d0000b273ce4f1737e465c9c8d7fdf6bc" },
-      song2: { title: "Sweet Child O' Mine", artist: "Guns N' Roses", art: "https://i.scdn.co/image/ab67616d0000b273ce4f1737e465c9c8d7fdf6bc" },
+      song1: { title: "Hotel California", artist: "Eagles" },
+      song2: { title: "Sweet Child O' Mine", artist: "Guns N' Roses" },
       votes: 89
     },
     {
       id: 3,
-      song1: { title: "Imagine", artist: "John Lennon", art: "https://i.scdn.co/image/ab67616d0000b273ce4f1737e465c9c8d7fdf6bc" },
-      song2: { title: "What's Going On", artist: "Marvin Gaye", art: "https://i.scdn.co/image/ab67616d0000b273ce4f1737e465c9c8d7fdf6bc" },
+      song1: { title: "Imagine", artist: "John Lennon" },
+      song2: { title: "What's Going On", artist: "Marvin Gaye" },
       votes: 203
     }
   ];
@@ -86,7 +118,7 @@ const SplashScreen: React.FC = () => {
                 <div className="flex items-center space-x-3">
                   <div className="relative">
                     <img 
-                      src={battle.song1.art} 
+                      src={youtubeThumbnails[`${battle.song1.title}-${battle.song1.artist}`] || 'https://via.placeholder.com/40x40/8B5CF6/FFFFFF?text=🎵'}
                       alt={battle.song1.title}
                       className="w-10 h-10 rounded-lg object-cover shadow-lg"
                     />
@@ -110,7 +142,7 @@ const SplashScreen: React.FC = () => {
                   </div>
                   <div className="relative">
                     <img 
-                      src={battle.song2.art} 
+                      src={youtubeThumbnails[`${battle.song2.title}-${battle.song2.artist}`] || 'https://via.placeholder.com/40x40/8B5CF6/FFFFFF?text=🎵'}
                       alt={battle.song2.title}
                       className="w-10 h-10 rounded-lg object-cover shadow-lg"
                     />
@@ -130,7 +162,7 @@ const SplashScreen: React.FC = () => {
             <div className="w-12 h-12 bg-primary-500 rounded-full flex items-center justify-center mx-auto mb-2 shadow-lg group-hover:shadow-primary-500/50 transition-all duration-300 transform group-hover:scale-110 group-hover:-translate-y-1">
               <Play className="w-6 h-6 text-white" />
             </div>
-            <p className="text-xs text-gray-400 group-hover:text-primary-300 transition-colors">30s Previews</p>
+            <p className="text-xs text-gray-400 group-hover:text-primary-300 transition-colors">Video Previews</p>
           </div>
           <div className="text-center group">
             <div className="w-12 h-12 bg-primary-500 rounded-full flex items-center justify-center mx-auto mb-2 shadow-lg group-hover:shadow-primary-500/50 transition-all duration-300 transform group-hover:scale-110 group-hover:-translate-y-1">
