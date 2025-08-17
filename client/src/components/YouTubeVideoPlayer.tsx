@@ -21,6 +21,7 @@ const YouTubeVideoPlayer: React.FC<YouTubeVideoPlayerProps> = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.7);
   const [isMuted, setIsMuted] = useState(false);
+  const [isIframeReady, setIsIframeReady] = useState(false);
   
   const playerRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -75,46 +76,65 @@ const YouTubeVideoPlayer: React.FC<YouTubeVideoPlayerProps> = ({
   }, [videoId, onPlay, onPause]);
 
   const togglePlay = () => {
-    if (!iframeRef.current) return;
-    
-    const iframe = iframeRef.current;
-    const player = (iframe as any).contentWindow;
-    
-    if (isPlaying) {
-      player.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
-      setIsPlaying(false);
-      onPause?.();
-    } else {
-      player.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-      setIsPlaying(true);
-      onPlay?.();
+    try {
+      if (!iframeRef.current || !isIframeReady) return;
+      
+      const iframe = iframeRef.current;
+      const player = (iframe as any).contentWindow;
+      
+      if (!player) return;
+      
+      if (isPlaying) {
+        player.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+        setIsPlaying(false);
+        onPause?.();
+      } else {
+        player.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+        setIsPlaying(true);
+        onPlay?.();
+      }
+    } catch (error) {
+      console.warn('YouTube player control error:', error);
     }
   };
 
   const toggleMute = () => {
-    if (!iframeRef.current) return;
-    
-    const iframe = iframeRef.current;
-    const player = (iframe as any).contentWindow;
-    
-    if (isMuted) {
-      player.postMessage('{"event":"command","func":"unMute","args":""}', '*');
-      setIsMuted(false);
-    } else {
-      player.postMessage('{"event":"command","func":"mute","args":""}', '*');
-      setIsMuted(true);
+    try {
+      if (!iframeRef.current || !isIframeReady) return;
+      
+      const iframe = iframeRef.current;
+      const player = (iframe as any).contentWindow;
+      
+      if (!player) return;
+      
+      if (isMuted) {
+        player.postMessage('{"event":"command","func":"unMute","args":""}', '*');
+        setIsMuted(false);
+      } else {
+        player.postMessage('{"event":"command","func":"mute","args":""}', '*');
+        setIsMuted(true);
+      }
+    } catch (error) {
+      console.warn('YouTube player control error:', error);
     }
   };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newVolume = parseFloat(e.target.value);
-    setVolume(newVolume);
-    
-    if (!iframeRef.current) return;
-    
-    const iframe = iframeRef.current;
-    const player = (iframe as any).contentWindow;
-    player.postMessage(`{"event":"command","func":"setVolume","args":[${newVolume * 100}]}`, '*');
+    try {
+      const newVolume = parseFloat(e.target.value);
+      setVolume(newVolume);
+      
+      if (!iframeRef.current || !isIframeReady) return;
+      
+      const iframe = iframeRef.current;
+      const player = (iframe as any).contentWindow;
+      
+      if (!player) return;
+      
+      player.postMessage(`{"event":"command","func":"setVolume","args":[${newVolume * 100}]}`, '*');
+    } catch (error) {
+      console.warn('YouTube player control error:', error);
+    }
   };
 
 
@@ -159,6 +179,7 @@ const YouTubeVideoPlayer: React.FC<YouTubeVideoPlayerProps> = ({
           className="w-full h-full rounded-2xl"
           frameBorder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          onLoad={() => setIsIframeReady(true)}
         />
 
         {/* 3D Overlay Controls */}
@@ -180,9 +201,16 @@ const YouTubeVideoPlayer: React.FC<YouTubeVideoPlayerProps> = ({
           <div className="absolute inset-0 flex items-center justify-center">
             <button
               onClick={togglePlay}
-              className="p-4 bg-black/60 backdrop-blur-md rounded-full border border-white/30 text-white hover:bg-white/20 transition-all duration-200 hover:scale-110 transform"
+              disabled={!isIframeReady}
+              className={`p-4 bg-black/60 backdrop-blur-md rounded-full border border-white/30 text-white transition-all duration-200 transform ${
+                isIframeReady 
+                  ? 'hover:bg-white/20 hover:scale-110' 
+                  : 'opacity-50 cursor-not-allowed'
+              }`}
             >
-              {isPlaying ? (
+              {!isIframeReady ? (
+                <div className="w-8 h-8 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              ) : isPlaying ? (
                 <Pause className="w-8 h-8" />
               ) : (
                 <Play className="w-8 h-8 ml-1" />
@@ -196,7 +224,12 @@ const YouTubeVideoPlayer: React.FC<YouTubeVideoPlayerProps> = ({
             <div className="flex items-center space-x-3 bg-black/40 backdrop-blur-md rounded-xl px-4 py-2 border border-white/20">
               <button
                 onClick={toggleMute}
-                className="text-white hover:text-gray-300 transition-colors"
+                disabled={!isIframeReady}
+                className={`transition-colors ${
+                  isIframeReady 
+                    ? 'text-white hover:text-gray-300' 
+                    : 'text-gray-500 cursor-not-allowed'
+                }`}
               >
                 {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
               </button>
@@ -208,9 +241,16 @@ const YouTubeVideoPlayer: React.FC<YouTubeVideoPlayerProps> = ({
                 step="0.1"
                 value={volume}
                 onChange={handleVolumeChange}
-                className="w-20 h-1.5 bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
+                disabled={!isIframeReady}
+                className={`w-20 h-1.5 rounded-lg appearance-none slider ${
+                  isIframeReady 
+                    ? 'bg-gray-600 cursor-pointer' 
+                    : 'bg-gray-800 cursor-not-allowed'
+                }`}
                 style={{
-                  background: `linear-gradient(to right, #8B5CF6 0%, #8B5CF6 ${volume * 100}%, #4B5563 ${volume * 100}%, #4B5563 100%)`
+                  background: isIframeReady 
+                    ? `linear-gradient(to right, #8B5CF6 0%, #8B5CF6 ${volume * 100}%, #4B5563 ${volume * 100}%, #4B5563 100%)`
+                    : '#374151'
                 }}
               />
             </div>

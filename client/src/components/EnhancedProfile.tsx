@@ -108,8 +108,8 @@ const EnhancedProfile: React.FC = () => {
         ...(recs.genreExploration || [])
       ];
       
-      // Fetch YouTube thumbnails for each song (limit to first 20 to avoid API rate limits)
-      const songsToProcess = allSongs.slice(0, 20);
+      // Fetch YouTube thumbnails for each song (process all recommendations)
+      const songsToProcess = allSongs;
       
       for (const song of songsToProcess) {
         try {
@@ -150,8 +150,8 @@ const EnhancedProfile: React.FC = () => {
     try {
       const thumbnails: { [key: string]: string } = {};
       
-      // Fetch YouTube thumbnails for each song (limit to first 10 to avoid API rate limits)
-      const songsToProcess = songs.slice(0, 10);
+      // Fetch YouTube thumbnails for each song (process all favorites)
+      const songsToProcess = songs;
       
       for (const song of songsToProcess) {
         try {
