@@ -50,7 +50,7 @@ const SongPicker: React.FC = () => {
       
       for (const song of songsToProcess) {
         try {
-          const response = await axios.get(`/api/youtube/search?q=${encodeURIComponent(song.title)}&artist=${encodeURIComponent(song.artist)}`);
+          const response = await axios.get(`/youtube/search?q=${encodeURIComponent(song.title)}&artist=${encodeURIComponent(song.artist)}`);
           if (response.data.videoId) {
             videoIds[song.id] = response.data.videoId;
           }

@@ -65,10 +65,10 @@ const BattleFeed: React.FC = () => {
       for (const battle of battlesToProcess) {
         try {
           // Fetch YouTube video ID for song 1
-          const song1Response = await axios.get(`/api/youtube/search?q=${encodeURIComponent(battle.song1_title)}&artist=${encodeURIComponent(battle.song1_artist)}`);
+          const song1Response = await axios.get(`/youtube/search?q=${encodeURIComponent(battle.song1_title)}&artist=${encodeURIComponent(battle.song1_artist)}`);
           
           // Fetch YouTube video ID for song 2
-          const song2Response = await axios.get(`/api/youtube/search?q=${encodeURIComponent(battle.song2_title)}&artist=${encodeURIComponent(battle.song2_artist)}`);
+          const song2Response = await axios.get(`/youtube/search?q=${encodeURIComponent(battle.song2_title)}&artist=${encodeURIComponent(battle.song2_artist)}`);
           
           videoIds[battle.id] = {
             song1: song1Response.data.videoId,
