@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  body {
+    @apply bg-background-primary text-white;
+    background-image: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-purple-gradient text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105;
+  }
+  
+  .btn-secondary {
+    @apply bg-background-secondary text-white font-medium py-2 px-4 rounded-lg border border-primary-500 hover:bg-primary-500 hover:text-white transition-all duration-200;
+  }
+  
+  .card {
+    @apply bg-background-secondary rounded-xl p-6 shadow-lg border border-background-tertiary;
+  }
+  
+  .input-field {
+    @apply bg-background-tertiary border border-background-secondary rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+  }
+  
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary-400 to-primary-600 bg-clip-text text-transparent;
+  }
+}
+
+@layer utilities {
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  .backdrop-blur {
+    backdrop-filter: blur(10px);
+  }
+}
+
+/* Custom slider styles */
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.slider::-webkit-slider-track {
+  background: #4b5563;
+  height: 8px;
+  border-radius: 4px;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  background: #7c3aed;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.slider::-moz-range-track {
+  background: #4b5563;
+  height: 8px;
+  border-radius: 4px;
+}
+
+.slider::-moz-range-thumb {
+  background: #7c3aed;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+} 
