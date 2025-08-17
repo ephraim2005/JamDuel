@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Bookmark, Clock, Users, Heart } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
-import AudioPlayer from './AudioPlayer';
+import YouTubeVideoPlayer from './YouTubeVideoPlayer';
 import BattleNavigator from './BattleNavigator';
 
 interface Battle {
@@ -35,11 +35,12 @@ const BattlePage: React.FC = () => {
   const [battle, setBattle] = useState<Battle | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [showAudioPlayer, setShowAudioPlayer] = useState(false);
+  const [showVideoPlayer, setShowVideoPlayer] = useState(false);
   const [voteAllocation, setVoteAllocation] = useState({ song1: 0, song2: 0 });
   const [totalVotesUsed, setTotalVotesUsed] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState('');
   const [votesResetTime, setVotesResetTime] = useState('');
+  const [youtubeVideoIds, setYoutubeVideoIds] = useState<{ song1?: string; song2?: string }>({});
 
   useEffect(() => {
     if (battleId) {
@@ -72,11 +73,34 @@ const BattlePage: React.FC = () => {
         });
         setTotalVotesUsed((userVote.song1_votes || 0) + (userVote.song2_votes || 0));
       }
+      
+      // Fetch YouTube video IDs for both songs
+      if (response.data.battle) {
+        await fetchYouTubeVideoIds(response.data.battle);
+      }
     } catch (error) {
       console.error('Failed to fetch battle:', error);
       setError('Failed to load battle');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchYouTubeVideoIds = async (battleData: Battle) => {
+    try {
+      // Fetch YouTube video ID for song 1
+      const song1Response = await axios.get(`/api/youtube/search?q=${encodeURIComponent(battleData.song1_title)}&artist=${encodeURIComponent(battleData.song1_artist)}`);
+      
+      // Fetch YouTube video ID for song 2
+      const song2Response = await axios.get(`/api/youtube/search?q=${encodeURIComponent(battleData.song2_title)}&artist=${encodeURIComponent(battleData.song2_artist)}`);
+      
+      setYoutubeVideoIds({
+        song1: song1Response.data.videoId,
+        song2: song2Response.data.videoId
+      });
+    } catch (error) {
+      console.error('Failed to fetch YouTube video IDs:', error);
+      // Don't set error state, just log it - videos will show as placeholders
     }
   };
 
@@ -263,28 +287,30 @@ const BattlePage: React.FC = () => {
           {/* Audio Preview Overlay */}
           <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
             <button
-              onClick={() => setShowAudioPlayer(!showAudioPlayer)}
+              onClick={() => setShowVideoPlayer(!showVideoPlayer)}
               className="bg-gray-800/90 backdrop-blur-sm rounded-xl px-6 py-3 text-white font-medium hover:bg-gray-700/90 transition-all duration-200 transform hover:scale-105 shadow-2xl border border-gray-600/50"
             >
-              🎵 Click to hear sample
+              🎬 Watch Music Videos
             </button>
           </div>
         </div>
       </div>
 
-      {/* Audio Player */}
-      {showAudioPlayer && (
+      {/* Video Player */}
+      {showVideoPlayer && (
         <div className="px-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <AudioPlayer
+            <YouTubeVideoPlayer
               songTitle={battle.song1_title}
               artist={battle.song1_artist}
-              previewUrl={battle.song1_preview}
+              videoId={youtubeVideoIds.song1}
+              className="w-full h-48"
             />
-            <AudioPlayer
+            <YouTubeVideoPlayer
               songTitle={battle.song2_title}
               artist={battle.song2_artist}
-              previewUrl={battle.song2_preview}
+              videoId={youtubeVideoIds.song2}
+              className="w-full h-48"
             />
           </div>
         </div>
