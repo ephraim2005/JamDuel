@@ -48,6 +48,7 @@ const EnhancedBattleFeed: React.FC = () => {
 
   const fetchYouTubeThumbnails = async (battlesData: Battle[]) => {
     try {
+      console.log('🔍 Starting to fetch YouTube thumbnails for', battlesData.length, 'battles');
       const thumbnails: { [key: number]: { song1?: string; song2?: string } } = {};
       
       // Fetch YouTube thumbnails for each battle (limit to first 5 to avoid API rate limits)
@@ -55,24 +56,30 @@ const EnhancedBattleFeed: React.FC = () => {
       
       for (const battle of battlesToProcess) {
         try {
+          console.log(`🎵 Fetching thumbnails for battle ${battle.id}: "${battle.song1_title}" vs "${battle.song2_title}"`);
+          
           // Fetch YouTube thumbnail for song 1
           const song1Response = await axios.get(`/youtube/search?q=${encodeURIComponent(battle.song1_title)}&artist=${encodeURIComponent(battle.song1_artist)}`);
+          console.log(`✅ Song 1 thumbnail:`, song1Response.data.thumbnail);
           
           // Fetch YouTube thumbnail for song 2
           const song2Response = await axios.get(`/youtube/search?q=${encodeURIComponent(battle.song2_title)}&artist=${encodeURIComponent(battle.song2_artist)}`);
+          console.log(`✅ Song 2 thumbnail:`, song2Response.data.thumbnail);
           
           thumbnails[battle.id] = {
             song1: song1Response.data.thumbnail,
             song2: song2Response.data.thumbnail
           };
         } catch (error) {
-          console.error(`Failed to fetch YouTube thumbnails for battle ${battle.id}:`, error);
+          console.error(`❌ Failed to fetch YouTube thumbnails for battle ${battle.id}:`, error);
         }
       }
       
+      console.log('🎯 Final thumbnails object:', thumbnails);
+      console.log('🎯 Setting YouTube thumbnails state:', thumbnails);
       setYoutubeThumbnails(thumbnails);
     } catch (error) {
-      console.error('Failed to fetch YouTube thumbnails:', error);
+      console.error('❌ Failed to fetch YouTube thumbnails:', error);
     }
   };
 
@@ -174,6 +181,7 @@ const EnhancedBattleFeed: React.FC = () => {
                       src={youtubeThumbnails[battle.id]?.song1 || battle.song1_art || 'https://via.placeholder.com/64x64/8B5CF6/FFFFFF?text=🎵'}
                       alt={battle.song1_title}
                       className="w-16 h-16 rounded-xl object-cover shadow-lg"
+                      onLoad={() => console.log(`🖼️ Song 1 image loaded for battle ${battle.id}:`, youtubeThumbnails[battle.id]?.song1 || battle.song1_art || 'placeholder')}
                     />
                     <div className="absolute -inset-1 bg-primary-500/20 rounded-xl blur-sm"></div>
                   </div>
