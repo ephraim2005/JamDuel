@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, Pause, Maximize2, Volume2, VolumeX, Settings } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
 
 interface YouTubeVideoPlayerProps {
   songTitle: string;
@@ -19,11 +19,8 @@ const YouTubeVideoPlayer: React.FC<YouTubeVideoPlayerProps> = ({
   className = ""
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [showVolume, setShowVolume] = useState(false);
   const [volume, setVolume] = useState(0.7);
   const [isMuted, setIsMuted] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   
   const playerRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -120,9 +117,7 @@ const YouTubeVideoPlayer: React.FC<YouTubeVideoPlayerProps> = ({
     player.postMessage(`{"event":"command","func":"setVolume","args":[${newVolume * 100}]}`, '*');
   };
 
-  const toggleExpand = () => {
-    setIsExpanded(!isExpanded);
-  };
+
 
   if (!videoId) {
     return (
@@ -154,11 +149,7 @@ const YouTubeVideoPlayer: React.FC<YouTubeVideoPlayerProps> = ({
   return (
     <div className={`relative group ${className}`}>
       {/* Main Video Container with 3D Effects */}
-      <div className={`relative transition-all duration-500 ease-out ${
-        isExpanded 
-          ? 'w-screen h-screen fixed inset-0 z-50 bg-black/95' 
-          : 'w-full aspect-video rounded-2xl overflow-hidden'
-      }`}>
+      <div className="relative w-full aspect-video rounded-2xl overflow-hidden transition-all duration-500 ease-out">
         
         {/* YouTube iframe */}
         <iframe
@@ -182,23 +173,7 @@ const YouTubeVideoPlayer: React.FC<YouTubeVideoPlayerProps> = ({
             </div>
             
             {/* Control Buttons */}
-            <div className="flex items-center space-x-2">
-              {/* Settings Button */}
-              <button
-                onClick={() => setShowSettings(!showSettings)}
-                className="p-2 bg-black/40 backdrop-blur-md rounded-lg border border-white/20 text-white hover:bg-white/20 transition-all duration-200 hover:scale-110"
-              >
-                <Settings className="w-4 h-4" />
-              </button>
-              
-              {/* Expand Button */}
-              <button
-                onClick={toggleExpand}
-                className="p-2 bg-black/40 backdrop-blur-md rounded-lg border border-white/20 text-white hover:bg-white/20 transition-all duration-200 hover:scale-110"
-              >
-                <Maximize2 className="w-4 h-4" />
-              </button>
-            </div>
+
           </div>
 
           {/* Center Play/Pause Button */}
@@ -240,32 +215,7 @@ const YouTubeVideoPlayer: React.FC<YouTubeVideoPlayerProps> = ({
               />
             </div>
 
-            {/* Settings Panel */}
-            {showSettings && (
-              <div className="bg-black/80 backdrop-blur-md rounded-xl p-4 border border-white/20 min-w-[200px]">
-                <h4 className="text-white font-semibold text-sm mb-3">Player Settings</h4>
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-gray-300 text-xs block mb-1">Quality</label>
-                    <select className="w-full bg-gray-800 text-white text-sm rounded-lg px-3 py-2 border border-gray-600">
-                      <option>Auto</option>
-                      <option>1080p</option>
-                      <option>720p</option>
-                      <option>480p</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-gray-300 text-xs block mb-1">Playback Speed</label>
-                    <select className="w-full bg-gray-800 text-white text-sm rounded-lg px-3 py-2 border border-gray-600">
-                      <option>Normal</option>
-                      <option>0.75x</option>
-                      <option>1.25x</option>
-                      <option>1.5x</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            )}
+
           </div>
         </div>
 
@@ -274,15 +224,6 @@ const YouTubeVideoPlayer: React.FC<YouTubeVideoPlayerProps> = ({
           <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
         </div>
       </div>
-
-      {/* Floating Song Info Card (when not expanded) */}
-      {!isExpanded && (
-        <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-900/90 to-blue-900/90 backdrop-blur-md rounded-xl px-6 py-3 border border-white/20 shadow-2xl">
-          <h3 className="text-white font-semibold text-center text-sm">{songTitle}</h3>
-          <p className="text-gray-300 text-center text-xs">{artist}</p>
-        </div>
-      )}
-
 
     </div>
   );

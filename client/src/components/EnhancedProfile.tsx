@@ -66,6 +66,7 @@ const EnhancedProfile: React.FC = () => {
   const [recommendations, setRecommendations] = useState<Recommendations | null>(null);
   const [recommendationStatus, setRecommendationStatus] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [youtubeThumbnails, setYoutubeThumbnails] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     fetchProfileData();
@@ -83,6 +84,9 @@ const EnhancedProfile: React.FC = () => {
         const response = await axios.get(`/recommendations/user/${profileData.user.id}`);
         if (response.data.recommendations) {
           setRecommendations(response.data.recommendations);
+          
+          // Fetch YouTube thumbnails for recommendations
+          await fetchRecommendationThumbnails(response.data.recommendations);
         }
         // Store the response data for status display
         setRecommendationStatus(response.data);
@@ -92,15 +96,77 @@ const EnhancedProfile: React.FC = () => {
     }
   };
 
+  const fetchRecommendationThumbnails = async (recs: Recommendations) => {
+    try {
+      const thumbnails: { [key: string]: string } = {};
+      
+      // Process all recommendation categories
+      const allSongs = [
+        ...(recs.popularSongs || []),
+        ...(recs.undergroundGems || []),
+        ...(recs.sameArtist || []),
+        ...(recs.genreExploration || [])
+      ];
+      
+      // Fetch YouTube thumbnails for each song (limit to first 20 to avoid API rate limits)
+      const songsToProcess = allSongs.slice(0, 20);
+      
+      for (const song of songsToProcess) {
+        try {
+          const response = await axios.get(`/youtube/search?q=${encodeURIComponent(song.title)}&artist=${encodeURIComponent(song.artist)}`);
+          if (response.data.thumbnail) {
+            thumbnails[`${song.title}-${song.artist}`] = response.data.thumbnail;
+          }
+        } catch (error) {
+          console.error(`Failed to fetch YouTube thumbnail for ${song.title}:`, error);
+        }
+      }
+      
+      // Merge with existing thumbnails
+      setYoutubeThumbnails(prev => ({ ...prev, ...thumbnails }));
+    } catch (error) {
+      console.error('Failed to fetch recommendation thumbnails:', error);
+    }
+  };
+
   const fetchProfileData = async () => {
     try {
       setLoading(true);
       const response = await axios.get('/users/profile');
       setProfileData(response.data);
+      
+      // Fetch YouTube thumbnails for favorite songs
+      if (response.data.favoriteSongs) {
+        await fetchYouTubeThumbnails(response.data.favoriteSongs);
+      }
     } catch (error) {
       console.error('Failed to fetch profile:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchYouTubeThumbnails = async (songs: FavoriteSong[]) => {
+    try {
+      const thumbnails: { [key: string]: string } = {};
+      
+      // Fetch YouTube thumbnails for each song (limit to first 10 to avoid API rate limits)
+      const songsToProcess = songs.slice(0, 10);
+      
+      for (const song of songsToProcess) {
+        try {
+          const response = await axios.get(`/youtube/search?q=${encodeURIComponent(song.title)}&artist=${encodeURIComponent(song.artist)}`);
+          if (response.data.thumbnail) {
+            thumbnails[`${song.title}-${song.artist}`] = response.data.thumbnail;
+          }
+        } catch (error) {
+          console.error(`Failed to fetch YouTube thumbnail for ${song.title}:`, error);
+        }
+      }
+      
+      setYoutubeThumbnails(thumbnails);
+    } catch (error) {
+      console.error('Failed to fetch YouTube thumbnails:', error);
     }
   };
 
@@ -225,13 +291,9 @@ const EnhancedProfile: React.FC = () => {
                     </div>
                     <div className="relative">
                       <img
-                        src={song.album_art_url || ''}
+                        src={youtubeThumbnails[`${song.title}-${song.artist}`] || song.album_art_url || 'https://via.placeholder.com/48x48/8B5CF6/FFFFFF?text=🎵'}
                         alt={song.title}
                         className="w-12 h-12 rounded-lg object-cover shadow-lg"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjOEI1Q0Y2Ii8+Cjx0ZXh0IHg9IjE1MCIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iNDgiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+8J+OjTwvdGV4dD4KPC9zdmc+';
-                        }}
                       />
                       <div className="absolute -inset-1 bg-primary-500/20 rounded-lg blur-sm"></div>
                     </div>
@@ -379,13 +441,9 @@ const EnhancedProfile: React.FC = () => {
                     <div key={index} className="flex items-center space-x-3 bg-gray-700/50 rounded-xl p-3">
                       <div className="relative">
                         <img
-                          src={song.album_art_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiBmaWxsPSIjOEI1Q0Y2Ii8+Cjx0ZXh0IHg9IjI0IiB5PSIyNCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPvCfj408L3RleHQ+Cjwvc3ZnPg=='}
+                          src={youtubeThumbnails[`${song.title}-${song.artist}`] || song.album_art_url || 'https://via.placeholder.com/48x48/8B5CF6/FFFFFF?text=🎵'}
                           alt={song.title}
                           className="w-12 h-12 rounded-lg object-cover"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiBmaWxsPSIjOEI1Q0Y2Ii8+Cjx0ZXh0IHg9IjI0IiB5PSIyNCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPvCfj408L3RleHQ+Cjwvc3ZnPg==';
-                          }}
                         />
                         <div className="absolute -inset-1 bg-yellow-500/20 rounded-lg blur-sm"></div>
                       </div>

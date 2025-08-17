@@ -23,6 +23,7 @@ const EnhancedBattleFeed: React.FC = () => {
   const [battles, setBattles] = useState<Battle[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('Most Voted');
+  const [youtubeThumbnails, setYoutubeThumbnails] = useState<{ [key: number]: { song1?: string; song2?: string } }>({});
 
   useEffect(() => {
     fetchBattles();
@@ -33,10 +34,45 @@ const EnhancedBattleFeed: React.FC = () => {
       setLoading(true);
       const response = await axios.get('/battles');
       setBattles(response.data.battles);
+      
+      // Fetch YouTube thumbnails for all battles
+      if (response.data.battles) {
+        await fetchYouTubeThumbnails(response.data.battles);
+      }
     } catch (error) {
       console.error('Failed to fetch battles:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchYouTubeThumbnails = async (battlesData: Battle[]) => {
+    try {
+      const thumbnails: { [key: number]: { song1?: string; song2?: string } } = {};
+      
+      // Fetch YouTube thumbnails for each battle (limit to first 5 to avoid API rate limits)
+      const battlesToProcess = battlesData.slice(0, 5);
+      
+      for (const battle of battlesToProcess) {
+        try {
+          // Fetch YouTube thumbnail for song 1
+          const song1Response = await axios.get(`/youtube/search?q=${encodeURIComponent(battle.song1_title)}&artist=${encodeURIComponent(battle.song1_artist)}`);
+          
+          // Fetch YouTube thumbnail for song 2
+          const song2Response = await axios.get(`/youtube/search?q=${encodeURIComponent(battle.song2_title)}&artist=${encodeURIComponent(battle.song2_artist)}`);
+          
+          thumbnails[battle.id] = {
+            song1: song1Response.data.thumbnail,
+            song2: song2Response.data.thumbnail
+          };
+        } catch (error) {
+          console.error(`Failed to fetch YouTube thumbnails for battle ${battle.id}:`, error);
+        }
+      }
+      
+      setYoutubeThumbnails(thumbnails);
+    } catch (error) {
+      console.error('Failed to fetch YouTube thumbnails:', error);
     }
   };
 
@@ -135,7 +171,7 @@ const EnhancedBattleFeed: React.FC = () => {
                 <div className="flex items-center space-x-3">
                   <div className="relative">
                     <img
-                      src={battle.song1_art}
+                      src={youtubeThumbnails[battle.id]?.song1 || battle.song1_art || 'https://via.placeholder.com/64x64/8B5CF6/FFFFFF?text=🎵'}
                       alt={battle.song1_title}
                       className="w-16 h-16 rounded-xl object-cover shadow-lg"
                     />
@@ -161,7 +197,7 @@ const EnhancedBattleFeed: React.FC = () => {
                   </div>
                   <div className="relative">
                     <img
-                      src={battle.song2_art}
+                      src={youtubeThumbnails[battle.id]?.song2 || battle.song2_art || 'https://via.placeholder.com/64x64/8B5CF6/FFFFFF?text=🎵'}
                       alt={battle.song2_title}
                       className="w-16 h-16 rounded-xl object-cover shadow-lg"
                     />
