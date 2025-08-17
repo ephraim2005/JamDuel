@@ -10,6 +10,7 @@ const userRoutes = require('./routes/users');
 const spotifyRoutes = require('./routes/spotify');
 const { router: recommendationRoutes } = require('./routes/recommendations');
 const { router: friendRoutes } = require('./routes/friends');
+const youtubeRoutes = require('./routes/youtube');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -44,6 +45,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/spotify', spotifyRoutes);
 app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/friends', friendRoutes);
+app.use('/api/youtube', youtubeRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

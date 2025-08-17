@@ -20,6 +20,7 @@ const SongPicker: React.FC = () => {
   const [selectedSongs, setSelectedSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null);
+  const [youtubeVideoIds, setYoutubeVideoIds] = useState<{ [key: string]: string }>({});
 
   const searchSongs = async (query: string) => {
     if (query.trim().length < 2) return;
@@ -28,10 +29,39 @@ const SongPicker: React.FC = () => {
       setLoading(true);
       const response = await axios.get(`/spotify/search?q=${encodeURIComponent(query)}&limit=20`);
       setSearchResults(response.data.tracks);
+      
+      // Fetch YouTube video IDs for all search results
+      if (response.data.tracks) {
+        await fetchYouTubeVideoIds(response.data.tracks);
+      }
     } catch (error) {
       console.error('Search failed:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchYouTubeVideoIds = async (songs: Song[]) => {
+    try {
+      const videoIds: { [key: string]: string } = {};
+      
+      // Fetch YouTube video IDs for each song (limit to first 5 to avoid API rate limits)
+      const songsToProcess = songs.slice(0, 5);
+      
+      for (const song of songsToProcess) {
+        try {
+          const response = await axios.get(`/api/youtube/search?q=${encodeURIComponent(song.title)}&artist=${encodeURIComponent(song.artist)}`);
+          if (response.data.videoId) {
+            videoIds[song.id] = response.data.videoId;
+          }
+        } catch (error) {
+          console.error(`Failed to fetch YouTube video ID for ${song.title}:`, error);
+        }
+      }
+      
+      setYoutubeVideoIds(videoIds);
+    } catch (error) {
+      console.error('Failed to fetch YouTube video IDs:', error);
     }
   };
 
@@ -177,18 +207,16 @@ const SongPicker: React.FC = () => {
                   </div>
                   
                   {/* YouTube Video Preview */}
-                  {song.preview_url && (
-                    <div className="mt-3">
-                      <YouTubeVideoPlayer
-                        songTitle={song.title}
-                        artist={song.artist}
-                        videoId={song.preview_url} // This will be YouTube video ID
-                        className="w-full h-32"
-                        onPlay={() => setCurrentlyPlaying(song.id)}
-                        onPause={() => setCurrentlyPlaying(null)}
-                      />
-                    </div>
-                  )}
+                  <div className="mt-3">
+                    <YouTubeVideoPlayer
+                      songTitle={song.title}
+                      artist={song.artist}
+                      videoId={youtubeVideoIds[song.id]}
+                      className="w-full h-32"
+                      onPlay={() => setCurrentlyPlaying(song.id)}
+                      onPause={() => setCurrentlyPlaying(null)}
+                    />
+                  </div>
                 </div>
               );
             })}

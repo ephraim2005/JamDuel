@@ -31,6 +31,7 @@ const BattleFeed: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [expandedBattle, setExpandedBattle] = useState<number | null>(null);
+  const [youtubeVideoIds, setYoutubeVideoIds] = useState<{ [key: number]: { song1?: string; song2?: string } }>({});
 
   useEffect(() => {
     fetchBattles();
@@ -41,11 +42,46 @@ const BattleFeed: React.FC = () => {
       setLoading(true);
       const response = await axios.get('/battles');
       setBattles(response.data.battles);
+      
+      // Fetch YouTube video IDs for all battles
+      if (response.data.battles) {
+        await fetchYouTubeVideoIds(response.data.battles);
+      }
     } catch (error) {
       console.error('Failed to fetch battles:', error);
       setError('Failed to load battles');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchYouTubeVideoIds = async (battlesData: Battle[]) => {
+    try {
+      const videoIds: { [key: number]: { song1?: string; song2?: string } } = {};
+      
+      // Fetch YouTube video IDs for each battle (limit to first 3 to avoid API rate limits)
+      const battlesToProcess = battlesData.slice(0, 3);
+      
+      for (const battle of battlesToProcess) {
+        try {
+          // Fetch YouTube video ID for song 1
+          const song1Response = await axios.get(`/api/youtube/search?q=${encodeURIComponent(battle.song1_title)}&artist=${encodeURIComponent(battle.song1_artist)}`);
+          
+          // Fetch YouTube video ID for song 2
+          const song2Response = await axios.get(`/api/youtube/search?q=${encodeURIComponent(battle.song2_title)}&artist=${encodeURIComponent(battle.song2_artist)}`);
+          
+          videoIds[battle.id] = {
+            song1: song1Response.data.videoId,
+            song2: song2Response.data.videoId
+          };
+        } catch (error) {
+          console.error(`Failed to fetch YouTube video IDs for battle ${battle.id}:`, error);
+        }
+      }
+      
+      setYoutubeVideoIds(videoIds);
+    } catch (error) {
+      console.error('Failed to fetch YouTube video IDs:', error);
     }
   };
 
@@ -209,7 +245,7 @@ const BattleFeed: React.FC = () => {
                         <YouTubeVideoPlayer
                           songTitle={battle.song1_title}
                           artist={battle.song1_artist}
-                          videoId={battle.song1_preview}
+                          videoId={youtubeVideoIds[battle.id]?.song1}
                           className="w-full h-32"
                         />
                       </div>
@@ -222,7 +258,7 @@ const BattleFeed: React.FC = () => {
                         <YouTubeVideoPlayer
                           songTitle={battle.song2_title}
                           artist={battle.song2_artist}
-                          videoId={battle.song2_preview}
+                          videoId={youtubeVideoIds[battle.id]?.song2}
                           className="w-full h-32"
                         />
                       </div>

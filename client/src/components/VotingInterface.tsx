@@ -36,6 +36,7 @@ const VotingInterface: React.FC = () => {
   const [voteCount, setVoteCount] = useState(1);
   const [voting, setVoting] = useState(false);
   const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null);
+  const [youtubeVideoIds, setYoutubeVideoIds] = useState<{ song1?: string; song2?: string }>({});
 
   useEffect(() => {
     if (id) {
@@ -50,11 +51,34 @@ const VotingInterface: React.FC = () => {
       setLoading(true);
       const response = await axios.get(`/battles/${id}`);
       setBattle(response.data.battle);
+      
+      // Fetch YouTube video IDs for both songs
+      if (response.data.battle) {
+        await fetchYouTubeVideoIds(response.data.battle);
+      }
     } catch (error) {
       console.error('Failed to fetch battle:', error);
       setError('Failed to load battle');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchYouTubeVideoIds = async (battleData: Battle) => {
+    try {
+      // Fetch YouTube video ID for song 1
+      const song1Response = await axios.get(`/api/youtube/search?q=${encodeURIComponent(battleData.song1_title)}&artist=${encodeURIComponent(battleData.song1_artist)}`);
+      
+      // Fetch YouTube video ID for song 2
+      const song2Response = await axios.get(`/api/youtube/search?q=${encodeURIComponent(battleData.song2_title)}&artist=${encodeURIComponent(battleData.song2_artist)}`);
+      
+      setYoutubeVideoIds({
+        song1: song1Response.data.videoId,
+        song2: song2Response.data.videoId
+      });
+    } catch (error) {
+      console.error('Failed to fetch YouTube video IDs:', error);
+      // Don't set error state, just log it - videos will show as placeholders
     }
   };
 
@@ -149,7 +173,7 @@ const VotingInterface: React.FC = () => {
               <YouTubeVideoPlayer
                 songTitle={battle.song1_title}
                 artist={battle.song1_artist}
-                videoId={battle.song1_preview} // This will be YouTube video ID instead of preview URL
+                videoId={youtubeVideoIds.song1}
                 className="w-80 h-48 mx-auto"
                 onPlay={() => setCurrentlyPlaying(battle.song1_id.toString())}
                 onPause={() => setCurrentlyPlaying(null)}
@@ -175,7 +199,7 @@ const VotingInterface: React.FC = () => {
               <YouTubeVideoPlayer
                 songTitle={battle.song2_title}
                 artist={battle.song2_artist}
-                videoId={battle.song2_preview} // This will be YouTube video ID instead of preview URL
+                videoId={youtubeVideoIds.song2}
                 className="w-80 h-48 mx-auto"
                 onPlay={() => setCurrentlyPlaying(battle.song2_id.toString())}
                 onPause={() => setCurrentlyPlaying(null)}
