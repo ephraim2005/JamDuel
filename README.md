@@ -1,203 +1,233 @@
-# JamDuel 🎵⚔️
+# 🎵 JamDuel - Music Battle App
 
-A music battle app where users can compete with songs and vote on their favorites!
+A React-based music battle application where users can vote on song battles, discover new music, and get personalized recommendations powered by AI.
+
+## ✨ Features
+
+- 🥊 **Music Battles**: Vote on head-to-head song matchups
+- 🎯 **Daily Voting System**: 10 votes per day with streak tracking
+- 👥 **Social Features**: Add friends, view profiles, see voting history
+- 🎵 **Music Discovery**: Find new songs through battles and recommendations
+- 🤖 **AI-Powered Recommendations**: Personalized music suggestions using GPT-4
+- 🎬 **YouTube Integration**: Watch music videos and get thumbnails
+- 🎨 **Modern UI**: Beautiful, responsive design with Tailwind CSS
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
 - Node.js (v16 or higher)
-- npm or yarn
-- Spotify API credentials (required for full experience)
-- OpenAI API key (required for personalized recommendations)
+- PostgreSQL database
+- **Three API Keys Required:**
+  - Spotify API credentials (for song search and metadata)
+  - YouTube API key (for video thumbnails and playback)
+  - OpenAI API key (for AI-powered music recommendations)
 
-### 📋 Setup Instructions
+### Installation
 
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/allenvarghese05/JamDuel.git
-   cd JamDuel
+   git clone <your-repo-url>
+   cd INFO310_Website
    ```
 
 2. **Install dependencies**
 
    ```bash
-   # Install root dependencies
-   npm install
+   # Install server dependencies
+   cd server && npm install
 
    # Install client dependencies
-   cd client
-   npm install
-
-   # Install server dependencies
-   cd ../server
-   npm install
+   cd ../client && npm install
    ```
 
-3. **Quick Start (No Database Setup Required)**
+3. **Set up the database**
 
    ```bash
-   cd server
+   cd ../server
+   npm run setup-db
+   ```
 
-   # Copy environment file
+4. **Configure environment variables**
+
+   ```bash
+   # Copy the example environment file
    cp env.example .env
 
-   # For basic testing, you can use the demo mode
-   # Just add a simple JWT_SECRET to your .env file
-   # JWT_SECRET=your_secret_key_here
+   # Edit .env with your API keys
+   nano .env
    ```
 
-4. **Spotify API Setup (Required for Full Experience)**
-
-   - Go to [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
-   - Click "Create App" and fill in basic info (takes 2 minutes)
-   - Get your `CLIENT_ID` and `CLIENT_SECRET`
-   - Add them to your `.env` file
-
-5. **OpenAI API Setup (Required for Recommendations)**
-
-   - Go to [OpenAI API Keys](https://platform.openai.com/api-keys)
-   - Sign up/login and create a new API key
-   - Add it to your `.env` file as `OPENAI_API_KEY`
-   - **Result**: You get personalized music recommendations powered by GPT-4!
-
-6. **Environment Variables**
-   Create a `.env` file in the `server` directory with:
-
-   ```env
-   # Required for basic functionality
-   JWT_SECRET=your_jwt_secret_key_here
-   PORT=3001
-
-   # Required for song search and full functionality
-   SPOTIFY_CLIENT_ID=your_spotify_client_id
-   SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
-
-   # Required for personalized recommendations
-   OPENAI_API_KEY=your_openai_api_key_here
-
-   # Note: Database credentials are not needed for basic testing
-   ```
-
-### 🎯 Running the App
-
-1. **Start the server**
+5. **Start the servers**
 
    ```bash
-   cd server
-   npm start
+   # Terminal 1: Start backend server
+   cd server && npm run dev
+
+   # Terminal 2: Start frontend
+   cd client && npm start
    ```
 
-   Server will run on http://localhost:3001
+## 🔑 API Configuration
 
-2. **Start the client** (in a new terminal)
-   ```bash
-   cd client
-   npm start
-   ```
-   App will open on http://localhost:3000
+### 1. **Spotify API** (Required for Song Search)
 
-### 🧪 User Testing Guide
+- **Purpose**: Search for songs, get album artwork, and song metadata
+- **Used for**: Song picker, album covers, song information
+- **Setup**:
+  - Go to [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
+  - Create a new app
+  - Get `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET`
 
-#### What Works With/Without Spotify API:
+### 2. **YouTube API** (Required for Video Features)
 
-**With Both APIs (Full Experience):**
+- **Purpose**: Get video thumbnails, video IDs, and enable video playback
+- **Used for**: Video thumbnails in battle feeds, YouTube video player
+- **Setup**:
+  - Go to [Google Cloud Console](https://console.cloud.google.com/)
+  - Enable YouTube Data API v3
+  - Create credentials and get `YOUTUBE_API_KEY`
 
-- ✅ Search for any song by title/artist
-- ✅ Create custom battles with real music
-- ✅ High-quality album covers
-- ✅ 30-second song previews
-- ✅ Real song metadata
-- ✅ **Personalized music recommendations** powered by GPT-4
-- ✅ **Smart song suggestions** based on your music taste
+### 3. **OpenAI API** (Required for AI Recommendations)
 
-**Without Spotify API (Demo Mode):**
+- **Purpose**: Generate personalized music recommendations using GPT-4
+- **Used for**: AI-powered song suggestions based on user preferences
+- **Setup**:
+  - Go to [OpenAI API Keys](https://platform.openai.com/api-keys)
+  - Sign up/login to OpenAI
+  - Get your `OPENAI_API_KEY`
 
-- ✅ View pre-loaded demo battles
-- ✅ Vote on existing battles
-- ✅ User authentication
-- ✅ Basic app navigation
-- ❌ Cannot search for new songs
-- ❌ Cannot create custom battles
+## 📁 Project Structure
 
-**💡 Pro Tip**: Getting both API keys takes 5 minutes and gives you the FULL app experience with AI-powered recommendations!
+```
+INFO310_Website/
+├── client/                 # React frontend
+│   ├── src/
+│   │   ├── components/    # React components
+│   │   ├── contexts/      # React contexts (Auth)
+│   │   └── App.tsx        # Main app component
+│   └── package.json
+├── server/                 # Express.js backend
+│   ├── routes/            # API routes
+│   ├── config/            # Database and API configs
+│   ├── scripts/           # Database setup and seeding
+│   └── index.js           # Server entry point
+└── README.md
+```
 
-#### For Testers:
+## 🎯 What Each API Enables
 
-1. **Register/Login**: Create an account or use demo credentials
-2. **Browse Battles**: View ongoing music battles (demo data)
-3. **Vote**: Listen to songs and vote for your favorite
-4. **Create Battles**: Start new battles (requires Spotify API for song search)
-5. **Profile**: Check your battle history and stats
+### **With Spotify API:**
 
-#### Key Features to Test:
+- ✅ **Song Search**: Find and add songs to battles
+- ✅ **Album Artwork**: High-quality song thumbnails
+- ✅ **Song Metadata**: Title, artist, album information
+- ✅ **Preview URLs**: 30-second song previews
 
-- ✅ User registration and login
-- ✅ Creating new music battles
-- ✅ Voting on songs
-- ✅ Battle feed and navigation
-- ✅ User profiles and statistics
-- ✅ Mobile responsiveness
+### **With YouTube API:**
 
-### 🛠️ Development
+- ✅ **Video Thumbnails**: Rich visual experience in battle feeds
+- ✅ **Video Playback**: Watch music videos in the app
+- ✅ **Enhanced UI**: Better visual representation of songs
 
-- **Frontend**: React + TypeScript + Tailwind CSS
-- **Backend**: Node.js + Express
-- **Database**: MySQL (for production) / Demo mode (for testing)
-- **Authentication**: JWT
-- **Music**: Spotify API integration (with demo fallback)
+### **With OpenAI API:**
 
-### 📱 App Structure
+- ✅ **AI Recommendations**: Personalized music suggestions
+- ✅ **Smart Categorization**: Songs grouped by mood/theme
+- ✅ **User Insights**: Understanding of musical preferences
 
-- **Login/Register**: User authentication
-- **Battle Feed**: View all ongoing battles
-- **Battle Page**: Individual battle interface
-- **Song Picker**: Select songs for battles
-- **Profile**: User statistics and history
-- **Friends**: Social features
+### **Without APIs (Demo Mode):**
 
-### 🐛 Troubleshooting
+- ❌ Limited song search functionality
+- ❌ Placeholder images instead of album artwork
+- ❌ No video playback features
+- ❌ Basic recommendations only
 
-- **Port conflicts**: Change ports in `.env` file
-- **Demo mode issues**: Make sure JWT_SECRET is set in `.env`
-- **Spotify API**: Verify API credentials and quotas (required for song search)
-- **OpenAI API**: Verify API key and check usage limits (required for recommendations)
-- **Build errors**: Clear `node_modules` and reinstall dependencies
-- **Database errors**: The app should work in demo mode without a database
+## 🛠️ Development
 
-### 🎵 Quick API Setup
+### Available Scripts
 
-**Spotify API (2 minutes):**
+**Server:**
 
-1. Go to [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
-2. Click "Create App"
-3. Fill in:
-   - **App name**: `JamDuel Test` (or any name)
-   - **App description**: `Testing JamDuel music battle app`
-   - **Website**: `http://localhost:3000`
-   - **Redirect URI**: `http://localhost:3000/callback`
-4. Click "Save"
-5. Copy your `Client ID` and `Client Secret`
+- `npm run dev` - Start development server with nodemon
+- `npm start` - Start production server
+- `npm run setup-db` - Initialize database
+- `npm run seed` - Seed with sample battles
 
-**OpenAI API (3 minutes):**
+**Client:**
 
-1. Go to [OpenAI API Keys](https://platform.openai.com/api-keys)
-2. Sign up/login to OpenAI
-3. Click "Create new secret key"
-4. Copy your API key
-5. Add both to your `.env` file
+- `npm start` - Start React development server
+- `npm run build` - Build for production
 
-**That's it!** You now have full access to all features including AI recommendations.
+### Database Schema
 
-### 📞 Support
+- **Users**: Authentication, voting stats, streaks
+- **Songs**: Song metadata, album artwork, preview URLs
+- **Battles**: Song matchups, voting results, timers
+- **Recommendations**: AI-generated song suggestions
 
-If you encounter issues during testing, please:
+## 🌟 Key Features Explained
 
-1. Check the console for error messages
-2. Verify all setup steps were completed
-3. Contact the development team with specific error details
+### **Music Battles System**
+
+- Users can create battles between any two songs
+- 10 votes per day with daily reset at midnight
+- Voting streaks tracked for gamification
+- Real-time battle results and statistics
+
+### **AI Recommendations**
+
+- Analyzes user's favorite songs and voting history
+- Generates personalized song suggestions using GPT-4
+- Categorizes recommendations by mood/theme
+- Updates daily for fresh content
+
+### **Social Features**
+
+- Add friends by username or email
+- View friend profiles and voting history
+- Compare musical tastes with friends
+- See who voted on which battles
+
+## 🚨 Troubleshooting
+
+### Common Issues
+
+1. **"Connection refused" errors**
+
+   - Ensure both server (port 5001) and client (port 3000) are running
+   - Check that no other processes are using these ports
+
+2. **API errors**
+
+   - Verify all three API keys are set correctly in `.env`
+   - Check API quotas and rate limits
+   - Ensure API services are enabled
+
+3. **Database connection issues**
+   - Verify PostgreSQL is running
+   - Check database credentials in `.env`
+   - Run `npm run setup-db` to initialize database
+
+### Getting Help
+
+1. Check the console logs for specific error messages
+2. Verify all environment variables are set correctly
+3. Ensure all dependencies are installed
+4. Contact the development team with specific error details
+
+## 🎉 Ready to Jam?
+
+Once you have all three APIs configured, you'll have access to:
+
+- 🎵 **Full song search and discovery**
+- 🎬 **Rich video content and thumbnails**
+- 🤖 **AI-powered personalized recommendations**
+- 👥 **Complete social music experience**
+
+**Pro Tip**: Getting all three API keys takes about 10 minutes and gives you the FULL app experience with AI-powered recommendations, rich media content, and comprehensive song discovery!
 
 ---
 
-**Happy Testing! 🎵🎉**
+**Built with ❤️ using React, Express, PostgreSQL, and AI**

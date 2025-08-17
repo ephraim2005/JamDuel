@@ -15,7 +15,7 @@ async function testRecommendations() {
     console.log('✅ OpenAI API key found');
     
     // Test the recommendations endpoint for user ID 2
-    const response = await axios.post('http://localhost:5001/api/recommendations/user/2/generate', {}, {
+    const response = await axios.post('http://localhost:5000/api/recommendations/user/2/generate', {}, {
       headers: {
         'Content-Type': 'application/json'
       }
