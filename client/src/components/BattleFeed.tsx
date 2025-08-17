@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Music, Users, Clock, Play, Headphones } from 'lucide-react';
+import { Music, Users, Clock, Headphones } from 'lucide-react';
 import axios from 'axios';
-import AudioPlayer from './AudioPlayer';
+import YouTubeVideoPlayer from './YouTubeVideoPlayer';
 
 interface Battle {
   id: number;
@@ -66,12 +66,7 @@ const BattleFeed: React.FC = () => {
     }
   };
 
-  const playPreview = (previewUrl: string) => {
-    if (!previewUrl) return;
-    
-    const audio = new Audio(previewUrl);
-    audio.play();
-  };
+
 
   if (loading) {
     return (
@@ -145,23 +140,12 @@ const BattleFeed: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 {/* Song 1 */}
                 <div className="text-center">
-                  <div className="relative mb-3">
+                  <div className="mb-3">
                     <img
                       src={battle.song1_art || 'https://via.placeholder.com/120x120/8B5CF6/FFFFFF?text=🎵'}
                       alt={battle.song1_title}
                       className="w-30 h-30 rounded-lg mx-auto"
                     />
-                    {battle.song1_preview && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          playPreview(battle.song1_preview);
-                        }}
-                        className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg opacity-0 hover:opacity-100 transition-opacity"
-                      >
-                        <Play className="w-8 h-8 text-white" />
-                      </button>
-                    )}
                   </div>
                   <h4 className="font-medium text-white text-sm truncate">{battle.song1_title}</h4>
                   <p className="text-gray-400 text-xs truncate">{battle.song1_artist}</p>
@@ -180,23 +164,12 @@ const BattleFeed: React.FC = () => {
 
                 {/* Song 2 */}
                 <div className="text-center">
-                  <div className="relative mb-3">
+                  <div className="mb-3">
                     <img
                       src={battle.song2_art || 'https://via.placeholder.com/120x120/4C1D95/FFFFFF?text=🎵'}
                       alt={battle.song2_title}
                       className="w-30 h-30 rounded-lg mx-auto"
                     />
-                    {battle.song2_preview && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          playPreview(battle.song2_preview);
-                        }}
-                        className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg opacity-0 hover:opacity-100 transition-opacity"
-                      >
-                        <Play className="w-8 h-8 text-white" />
-                      </button>
-                    )}
                   </div>
                   <h4 className="font-medium text-white text-sm truncate">{battle.song2_title}</h4>
                   <p className="text-gray-400 text-xs truncate">{battle.song2_artist}</p>
@@ -212,7 +185,7 @@ const BattleFeed: React.FC = () => {
                   >
                     <Headphones size={16} />
                     <span className="text-sm font-medium">
-                      {expandedBattle === battle.id ? 'Hide Preview' : 'Preview Songs'}
+                      {expandedBattle === battle.id ? 'Hide Videos' : 'Watch Videos'}
                     </span>
                   </button>
                   
@@ -224,31 +197,33 @@ const BattleFeed: React.FC = () => {
                   </button>
                 </div>
                 
-                {/* Expanded Audio Player */}
+                {/* Expanded Video Player */}
                 {expandedBattle === battle.id && (
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Song 1 Audio Player */}
+                      {/* Song 1 Video Player */}
                       <div>
                         <h4 className="text-white text-sm font-medium mb-2 text-center">
                           {battle.song1_title}
                         </h4>
-                        <AudioPlayer
+                        <YouTubeVideoPlayer
                           songTitle={battle.song1_title}
                           artist={battle.song1_artist}
-                          previewUrl={battle.song1_preview}
+                          videoId={battle.song1_preview}
+                          className="w-full h-32"
                         />
                       </div>
                       
-                      {/* Song 2 Audio Player */}
+                      {/* Song 2 Video Player */}
                       <div>
                         <h4 className="text-white text-sm font-medium mb-2 text-center">
                           {battle.song2_title}
                         </h4>
-                        <AudioPlayer
+                        <YouTubeVideoPlayer
                           songTitle={battle.song2_title}
                           artist={battle.song2_artist}
-                          previewUrl={battle.song2_preview}
+                          videoId={battle.song2_preview}
+                          className="w-full h-32"
                         />
                       </div>
                     </div>

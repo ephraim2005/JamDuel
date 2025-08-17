@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Play, Pause, Minus, Plus, ArrowLeft } from 'lucide-react';
+import { Minus, Plus, ArrowLeft } from 'lucide-react';
 import axios from 'axios';
+import YouTubeVideoPlayer from './YouTubeVideoPlayer';
 
 interface Battle {
   id: number;
@@ -35,7 +36,6 @@ const VotingInterface: React.FC = () => {
   const [voteCount, setVoteCount] = useState(1);
   const [voting, setVoting] = useState(false);
   const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null);
-  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -43,14 +43,7 @@ const VotingInterface: React.FC = () => {
     }
   }, [id]);
 
-  useEffect(() => {
-    return () => {
-      if (audio) {
-        audio.pause();
-        audio.currentTime = 0;
-      }
-    };
-  }, [audio]);
+
 
   const fetchBattle = async () => {
     try {
@@ -65,36 +58,7 @@ const VotingInterface: React.FC = () => {
     }
   };
 
-  const playPreview = (previewUrl: string, songId: number) => {
-    if (!previewUrl) return;
 
-    if (currentlyPlaying === songId.toString()) {
-      // Stop current audio
-      if (audio) {
-        audio.pause();
-        audio.currentTime = 0;
-        setAudio(null);
-        setCurrentlyPlaying(null);
-      }
-    } else {
-      // Stop any currently playing audio
-      if (audio) {
-        audio.pause();
-        audio.currentTime = 0;
-      }
-
-      // Play new audio
-      const newAudio = new Audio(previewUrl);
-      newAudio.addEventListener('ended', () => {
-        setCurrentlyPlaying(null);
-        setAudio(null);
-      });
-      
-      newAudio.play();
-      setAudio(newAudio);
-      setCurrentlyPlaying(songId.toString());
-    }
-  };
 
   const handleVote = async (chosenSongId: number) => {
     if (!battle || !user) return;
@@ -181,24 +145,15 @@ const VotingInterface: React.FC = () => {
         <div className="grid grid-cols-2 gap-8">
           {/* Song 1 */}
           <div className="text-center">
-            <div className="relative mb-4">
-              <img
-                src={battle.song1_art || 'https://via.placeholder.com/160x160/8B5CF6/FFFFFF?text=🎵'}
-                alt={battle.song1_title}
-                className="w-40 h-40 rounded-xl mx-auto"
+            <div className="mb-4">
+              <YouTubeVideoPlayer
+                songTitle={battle.song1_title}
+                artist={battle.song1_artist}
+                videoId={battle.song1_preview} // This will be YouTube video ID instead of preview URL
+                className="w-80 h-48 mx-auto"
+                onPlay={() => setCurrentlyPlaying(battle.song1_id.toString())}
+                onPause={() => setCurrentlyPlaying(null)}
               />
-              {battle.song1_preview && (
-                <button
-                  onClick={() => playPreview(battle.song1_preview, battle.song1_id)}
-                  className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-xl opacity-0 hover:opacity-100 transition-opacity"
-                >
-                  {currentlyPlaying === battle.song1_id.toString() ? (
-                    <Pause className="w-12 h-12 text-white" />
-                  ) : (
-                    <Play className="w-12 h-12 text-white" />
-                  )}
-                </button>
-              )}
             </div>
             <h3 className="text-lg font-semibold text-white mb-1">{battle.song1_title}</h3>
             <p className="text-gray-400 mb-2">{battle.song1_artist}</p>
@@ -210,30 +165,21 @@ const VotingInterface: React.FC = () => {
             <div className="text-center">
               <div className="text-6xl font-bold text-primary-400 mb-4">VS</div>
               <div className="text-gray-400 mb-2">Total Votes: {battle.total_votes}</div>
-              <div className="text-sm text-gray-500">Tap play buttons to preview</div>
+              <div className="text-sm text-gray-500">Hover over videos for controls</div>
             </div>
           </div>
 
           {/* Song 2 */}
           <div className="text-center">
-            <div className="relative mb-4">
-              <img
-                src={battle.song2_art || 'https://via.placeholder.com/160x160/4C1D95/FFFFFF?text=🎵'}
-                alt={battle.song2_title}
-                className="w-40 h-40 rounded-xl mx-auto"
+            <div className="mb-4">
+              <YouTubeVideoPlayer
+                songTitle={battle.song2_title}
+                artist={battle.song2_artist}
+                videoId={battle.song2_preview} // This will be YouTube video ID instead of preview URL
+                className="w-80 h-48 mx-auto"
+                onPlay={() => setCurrentlyPlaying(battle.song2_id.toString())}
+                onPause={() => setCurrentlyPlaying(null)}
               />
-              {battle.song2_preview && (
-                <button
-                  onClick={() => playPreview(battle.song2_preview, battle.song2_id)}
-                  className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-xl opacity-0 hover:opacity-100 transition-opacity"
-                >
-                  {currentlyPlaying === battle.song2_id.toString() ? (
-                    <Pause className="w-12 h-12 text-white" />
-                  ) : (
-                    <Play className="w-12 h-12 text-white" />
-                  )}
-                </button>
-              )}
             </div>
             <h3 className="text-lg font-semibold text-white mb-1">{battle.song2_title}</h3>
             <p className="text-gray-400 mb-2">{battle.song2_artist}</p>

@@ -169,6 +169,7 @@ A music battle app where users can compete with songs and vote on their favorite
 ### 🎵 Quick API Setup
 
 **Spotify API (2 minutes):**
+
 1. Go to [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
 2. Click "Create App"
 3. Fill in:
@@ -180,6 +181,7 @@ A music battle app where users can compete with songs and vote on their favorite
 5. Copy your `Client ID` and `Client Secret`
 
 **OpenAI API (3 minutes):**
+
 1. Go to [OpenAI API Keys](https://platform.openai.com/api-keys)
 2. Sign up/login to OpenAI
 3. Click "Create new secret key"

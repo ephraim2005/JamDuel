@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, X, Music, Play, Pause } from 'lucide-react';
+import { Search, Plus, X, Music } from 'lucide-react';
 import axios from 'axios';
+import YouTubeVideoPlayer from './YouTubeVideoPlayer';
 
 interface Song {
   id: string;
@@ -19,7 +20,6 @@ const SongPicker: React.FC = () => {
   const [selectedSongs, setSelectedSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null);
-  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
 
   const searchSongs = async (query: string) => {
     if (query.trim().length < 2) return;
@@ -64,36 +64,7 @@ const SongPicker: React.FC = () => {
     setSelectedSongs(selectedSongs.filter(s => s.id !== songId));
   };
 
-  const playPreview = (song: Song) => {
-    if (!song.preview_url) return;
 
-    if (currentlyPlaying === song.id) {
-      // Stop current audio
-      if (audio) {
-        audio.pause();
-        audio.currentTime = 0;
-        setAudio(null);
-        setCurrentlyPlaying(null);
-      }
-    } else {
-      // Stop any currently playing audio
-      if (audio) {
-        audio.pause();
-        audio.currentTime = 0;
-      }
-
-      // Play new audio
-      const newAudio = new Audio(song.preview_url);
-      newAudio.addEventListener('ended', () => {
-        setCurrentlyPlaying(null);
-        setAudio(null);
-      });
-      
-      newAudio.play();
-      setAudio(newAudio);
-      setCurrentlyPlaying(song.id);
-    }
-  };
 
   const startBattling = () => {
     if (selectedSongs.length >= 3) {
@@ -186,38 +157,45 @@ const SongPicker: React.FC = () => {
               const isPlaying = currentlyPlaying === song.id;
               
               return (
-                <div key={song.id} className="card flex items-center space-x-3">
-                  <img
-                    src={song.album_art_url || 'https://via.placeholder.com/60x60/8B5CF6/FFFFFF?text=🎵'}
-                    alt={song.title}
-                    className="w-15 h-15 rounded-lg"
-                  />
-                  
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-white truncate">{song.title}</p>
-                    <p className="text-gray-400 text-sm truncate">{song.artist}</p>
-                    <p className="text-gray-500 text-xs truncate">{song.album}</p>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    {song.preview_url && (
-                      <button
-                        onClick={() => playPreview(song)}
-                        className="p-2 hover:bg-primary-500/20 rounded-lg text-primary-400 hover:text-primary-300 transition-colors"
-                      >
-                        {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                      </button>
-                    )}
+                <div key={song.id} className="card">
+                  <div className="flex items-center space-x-4 mb-3">
+                    <img
+                      src={song.album_art_url || 'https://via.placeholder.com/60x60/8B5CF6/FFFFFF?text=🎵'}
+                      alt={song.title}
+                      className="w-15 h-15 rounded-lg"
+                    />
                     
-                    {!isSelected && selectedSongs.length < 5 && (
-                      <button
-                        onClick={() => addSong(song)}
-                        className="p-2 hover:bg-green-500/20 rounded-lg text-green-400 hover:text-green-300 transition-colors"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-white truncate">{song.title}</p>
+                      <p className="text-gray-400 text-sm truncate">{song.artist}</p>
+                      <p className="text-gray-500 text-xs truncate">{song.album}</p>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      {!isSelected && selectedSongs.length < 5 && (
+                        <button
+                          onClick={() => addSong(song)}
+                          className="p-2 hover:bg-green-500/20 rounded-lg text-green-400 hover:text-green-300 transition-colors"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
                   </div>
+                  
+                  {/* YouTube Video Preview */}
+                  {song.preview_url && (
+                    <div className="mt-3">
+                      <YouTubeVideoPlayer
+                        songTitle={song.title}
+                        artist={song.artist}
+                        videoId={song.preview_url} // This will be YouTube video ID
+                        className="w-full h-32"
+                        onPlay={() => setCurrentlyPlaying(song.id)}
+                        onPause={() => setCurrentlyPlaying(null)}
+                      />
+                    </div>
+                  )}
                 </div>
               );
             })}
