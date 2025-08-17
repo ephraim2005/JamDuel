@@ -72,14 +72,7 @@ const SongPicker: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    return () => {
-      if (audio) {
-        audio.pause();
-        audio.currentTime = 0;
-      }
-    };
-  }, [audio]);
+
 
   return (
     <div className="min-h-screen bg-dark-gradient p-6">
