@@ -9,6 +9,57 @@ const SplashScreen: React.FC = () => {
   const { user, loading } = useAuth();
   const [youtubeThumbnails, setYoutubeThumbnails] = useState<{ [key: string]: string }>({});
 
+  // Fetch YouTube thumbnails for sample battles
+  useEffect(() => {
+    const fetchYouTubeThumbnails = async () => {
+      try {
+        const thumbnails: { [key: string]: string } = {};
+        
+        const sampleBattles = [
+          {
+            id: 1,
+            song1: { title: "Bohemian Rhapsody", artist: "Queen" },
+            song2: { title: "Stairway to Heaven", artist: "Led Zeppelin" },
+            votes: 156
+          },
+          {
+            id: 2,
+            song1: { title: "Hotel California", artist: "Eagles" },
+            song2: { title: "Sweet Child O' Mine", artist: "Guns N' Roses" },
+            votes: 89
+          },
+          {
+            id: 3,
+            song1: { title: "Imagine", artist: "John Lennon" },
+            song2: { title: "What's Going On", artist: "Marvin Gaye" },
+            votes: 203
+          }
+        ];
+        
+        for (const battle of sampleBattles) {
+          try {
+            // Fetch YouTube thumbnail for song 1
+            const song1Response = await axios.get(`/youtube/search?q=${encodeURIComponent(battle.song1.title)}&artist=${encodeURIComponent(battle.song1.artist)}`);
+            
+            // Fetch YouTube thumbnail for song 2
+            const song2Response = await axios.get(`/youtube/search?q=${encodeURIComponent(battle.song2.title)}&artist=${encodeURIComponent(battle.song2.artist)}`);
+            
+            thumbnails[`${battle.song1.title}-${battle.song1.artist}`] = song1Response.data.thumbnail;
+            thumbnails[`${battle.song2.title}-${battle.song2.artist}`] = song2Response.data.thumbnail;
+          } catch (error) {
+            console.error(`Failed to fetch YouTube thumbnails for battle ${battle.id}:`, error);
+          }
+        }
+        
+        setYoutubeThumbnails(thumbnails);
+      } catch (error) {
+        console.error('Failed to fetch YouTube thumbnails:', error);
+      }
+    };
+
+    fetchYouTubeThumbnails();
+  }, []);
+
   // Redirect authenticated users to the main app
   useEffect(() => {
     if (!loading && user) {
@@ -39,36 +90,6 @@ const SplashScreen: React.FC = () => {
     return null;
   }
 
-  // Fetch YouTube thumbnails for sample battles
-  useEffect(() => {
-    const fetchYouTubeThumbnails = async () => {
-      try {
-        const thumbnails: { [key: string]: string } = {};
-        
-        for (const battle of sampleBattles) {
-          try {
-            // Fetch YouTube thumbnail for song 1
-            const song1Response = await axios.get(`/youtube/search?q=${encodeURIComponent(battle.song1.title)}&artist=${encodeURIComponent(battle.song1.artist)}`);
-            
-            // Fetch YouTube thumbnail for song 2
-            const song2Response = await axios.get(`/youtube/search?q=${encodeURIComponent(battle.song2.title)}&artist=${encodeURIComponent(battle.song2.artist)}`);
-            
-            thumbnails[`${battle.song1.title}-${battle.song1.artist}`] = song1Response.data.thumbnail;
-            thumbnails[`${battle.song2.title}-${battle.song2.artist}`] = song2Response.data.thumbnail;
-          } catch (error) {
-            console.error(`Failed to fetch YouTube thumbnails for battle ${battle.id}:`, error);
-          }
-        }
-        
-        setYoutubeThumbnails(thumbnails);
-      } catch (error) {
-        console.error('Failed to fetch YouTube thumbnails:', error);
-      }
-    };
-
-    fetchYouTubeThumbnails();
-  }, []);
-
   const sampleBattles = [
     {
       id: 1,
@@ -89,6 +110,7 @@ const SplashScreen: React.FC = () => {
       votes: 203
     }
   ];
+
 
   return (
     <div className="min-h-screen bg-dark-gradient flex flex-col">
