@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/static/css/main.d5996720.css",
-    "main.js": "/static/js/main.f5553116.js",
-    "index.html": "/index.html",
-    "main.d5996720.css.map": "/static/css/main.d5996720.css.map",
-    "main.f5553116.js.map": "/static/js/main.f5553116.js.map"
+    "main.css": "/JamDuel/static/css/main.d5996720.css",
+    "main.js": "/JamDuel/static/js/main.866d901a.js",
+    "index.html": "/JamDuel/index.html",
+    "main.d5996720.css.map": "/JamDuel/static/css/main.d5996720.css.map",
+    "main.866d901a.js.map": "/JamDuel/static/js/main.866d901a.js.map"
   },
   "entrypoints": [
     "static/css/main.d5996720.css",
-    "static/js/main.f5553116.js"
+    "static/js/main.866d901a.js"
   ]
 }
