@@ -11,10 +11,18 @@
     "install-all": "npm install && cd server && npm install && cd ../client && npm install",
     "setup-db": "cd server && npm run setup-db"
   },
-  "keywords": ["music", "discovery", "voting", "spotify"],
+  "keywords": [
+    "music",
+    "discovery",
+    "voting",
+    "spotify"
+  ],
   "author": "JamDuel Team",
   "license": "MIT",
   "devDependencies": {
     "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
   }
-} 
+}
